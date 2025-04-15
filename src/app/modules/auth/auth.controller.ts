@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../../shared/catchAsync";
-import { loginUserService } from "./auth.service";
+import { loginUserService, refreshTokenService } from "./auth.service";
 import { sendResponse } from "../../../shared/sendResponse";
 import { StatusCodes } from "http-status-codes";
 
@@ -21,5 +21,18 @@ export const loginUser = catchAsync(async(req: Request, res: Response) => {
             accessToken: result.accessToken,
             needsPasswordChange: result.needsPasswordChange
         }
+    })
+})
+
+export const refreshToken = catchAsync(async(req: Request, res: Response) => {
+    console.log("cookies goes here");
+    const { refreshToken } = req.cookies;
+    const result = await refreshTokenService(refreshToken);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: 'refresh token retrieved successfully',
+        data: result
     })
 })

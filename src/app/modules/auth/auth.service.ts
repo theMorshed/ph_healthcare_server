@@ -1,7 +1,7 @@
 import { UserStatus } from "@prisma/client"
 import { prisma } from "../../../shared/prisma"
 import bcrypt from 'bcrypt';
-import { generateToken } from "../../../helpers/generateToken";
+import { generateToken, verifyToken } from "../../../helpers/generateToken";
 
 export const loginUserService = async(payload: {email: string, password: string}) => {
     const userData = await prisma.user.findUniqueOrThrow({
@@ -22,6 +22,29 @@ export const loginUserService = async(payload: {email: string, password: string}
     return {
         accessToken,
         refreshToken,
+        needsPasswordChange: userData.needsPasswordChange
+    }
+}
+
+export const refreshTokenService = async(token: string) => {
+    let decodedData;
+    try {
+        decodedData = verifyToken(token, 'abcdefghijklmnop');
+    } catch(err) {
+        throw new Error('You are not authorized');
+    }
+
+    const userData = await prisma.user.findUniqueOrThrow({
+        where: {
+            email: decodedData.email,
+            status: UserStatus.ACTIVE
+        }
+    })
+
+    const accessToken = generateToken({email: userData.email, role: userData.role}, "abcdefgh", "5m");
+
+    return {
+        accessToken,
         needsPasswordChange: userData.needsPasswordChange
     }
 }
