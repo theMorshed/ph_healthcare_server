@@ -1,19 +1,14 @@
-import { Request, Response } from "express";
 import { createAdminService } from "./user.service";
+import { catchAsync } from "../../../shared/catchAsync";
+import { sendResponse } from "../../../shared/sendResponse";
+import { StatusCodes } from "http-status-codes";
 
-export const createAdmin = async(req: Request, res: Response) => {
-    try {
-        const result = await createAdminService(req.body);
-        res.status(201).json({
-            success: true,
-            message: 'Admin created successfully',
-            data: result
-        })
-    } catch(err: any) {
-        res.status(500).json({
-            success: false,
-            message: err?.name || 'Something went wrong',
-            error: err
-        })
-    }
-}
+export const createAdmin = catchAsync(async(req, res) => {
+    const result = await createAdminService(req);
+    sendResponse(res, {
+        statusCode: StatusCodes.CREATED,
+        success: true,
+        message: 'Admin created successfully',
+        data: result
+    })
+});
