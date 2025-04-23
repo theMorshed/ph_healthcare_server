@@ -1,11 +1,13 @@
 import { NextFunction, Request, Response, Router } from "express";
-import { createAdmin, createDoctor, createPatient } from "./user.controller";
+import { createAdmin, createDoctor, createPatient, getAllUser } from "./user.controller";
 import { auth } from "../../middleware/auth";
 import { UserRole } from "@prisma/client";
 import { upload } from "../../../helpers/fileUploader";
 import { adminSchema, doctorSchema, patientSchema } from "./user.validation";
 
 const router = Router();
+
+router.get('/', auth(UserRole.SUPER_ADMIN, UserRole.ADMIN), getAllUser);
 
 router.post('/create-admin', 
     auth(UserRole.ADMIN, UserRole.SUPER_ADMIN), 

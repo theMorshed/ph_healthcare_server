@@ -1,9 +1,12 @@
-import { Admin, Doctor, Patient, UserRole } from "@prisma/client";
+import { Admin, Doctor, Patient, Prisma, UserRole } from "@prisma/client";
 import bcrypt from 'bcrypt';
 import { prisma } from "../../../shared/prisma";
 import { uploadToCloudinary } from "../../../helpers/fileUploader";
 import { Request } from "express";
 import { IFile } from "../../types/file";
+import { calculatePagination } from "../../../helpers/paginationHelper";
+import { userSearchableFields } from "./user.constant";
+import { createDeflate } from "zlib";
 
 export const createAdminService = async(req: Request): Promise<Admin> => {
     const file = req.file as IFile;
@@ -93,4 +96,69 @@ export const createPatientService = async(req: Request): Promise<Patient> => {
     })
 
     return result;
+}
+
+export const getAllUserService = async(params: any, options: any) => {    
+    const { searchTerm, ...filterData } = params;
+    const { limit, page, skip } = calculatePagination(options);
+    const conditions: Prisma.UserWhereInput[] = [];    
+
+    if (params.searchTerm) {
+        conditions.push({
+            OR: userSearchableFields.map(field => ({
+                [field]: {
+                    contains: params.searchTerm,
+                    mode: 'insensitive'
+                }
+            }))
+        })
+    }
+
+    if (Object.keys(filterData).length > 0) {
+        conditions.push({
+            AND: Object.keys(filterData).map(key => ({
+                [key]: {
+                    equals: filterData[key]
+                }
+            }))
+        })
+    }
+
+    const whereConditons: Prisma.UserWhereInput = conditions.length > 0 ? {AND: conditions} : {};
+
+    const result = await prisma.user.findMany({
+        where: whereConditons,
+        skip,
+        take: limit,
+        orderBy: options.sortBy && options.sortOrder ? {
+            [options.sortBy]: options.sortOrder
+        } : {
+            createdAt: 'desc'
+        },
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            status: true,
+            needsPasswordChange: true,
+            createdAt: true,
+            updatedAt: true,
+            admin: true,
+            patient: true,
+            doctor: true,
+        }
+    });
+
+    const total = await prisma.user.count({
+        where: whereConditons
+    })
+
+    return {
+        meta: {
+            page,
+            limit,
+            total
+        },
+        data: result
+    }
 }

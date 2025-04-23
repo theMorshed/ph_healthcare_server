@@ -1,7 +1,9 @@
-import { createAdminService, createDoctorService, createPatientService } from "./user.service";
+import { createAdminService, createDoctorService, createPatientService, getAllUserService } from "./user.service";
 import { catchAsync } from "../../../shared/catchAsync";
 import { sendResponse } from "../../../shared/sendResponse";
 import { StatusCodes } from "http-status-codes";
+import { pick } from "../../../shared/pick";
+import { userFilterableFields } from "./user.constant";
 
 export const createAdmin = catchAsync(async(req, res) => {
     const result = await createAdminService(req);
@@ -32,3 +34,17 @@ export const createPatient = catchAsync(async(req, res) => {
         data: result
     })
 });
+
+export const getAllUser = catchAsync(async(req, res) => {
+    const filters = pick(req.query, userFilterableFields);
+    const options = pick(req.query, ['limit', 'page']);   
+    const result = await getAllUserService(filters, options);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: 'All user retrieved successfully',
+        meta: result.meta,
+        data: result.data
+    })    
+})
