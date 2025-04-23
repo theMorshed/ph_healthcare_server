@@ -1,4 +1,4 @@
-import { Gender } from "@prisma/client";
+import { Gender, UserStatus } from "@prisma/client";
 import { z } from "zod";
 
 export const adminSchema = z.object({
@@ -35,10 +35,19 @@ export const doctorSchema = z.object({
 });
 
 export const patientSchema = z.object({
-  name: z.string({ required_error: 'Name is required' }),
-  email: z.string({ required_error: 'Email is required' }).email('Invalid email address'),
-  profilePhoto: z.string().url('Invalid URL').optional(),
-  contactNumber: z.string({ required_error: 'Contact number is required' }).min(10, 'Contact number must be at least 10 digits'),
-  address: z.string().optional(),
-  isDeleted: z.boolean().optional().default(false),
+    password: z.string({required_error: "Password is required"}),
+    patient: z.object({
+        name: z.string({ required_error: 'Name is required' }),
+        email: z.string({ required_error: 'Email is required' }).email('Invalid email address'),
+        profilePhoto: z.string().url('Invalid URL').optional(),
+        contactNumber: z.string({ required_error: 'Contact number is required' }).min(10, 'Contact number must be at least 10 digits'),
+        address: z.string().optional(),
+        isDeleted: z.boolean().optional().default(false),
+    })
 });
+
+export const statusSchema = z.object({
+    body: z.object({
+        status: z.enum([UserStatus.ACTIVE, UserStatus.BLOCKED, UserStatus.DELETED])
+    })
+})
