@@ -2,12 +2,13 @@ import multer from 'multer';
 import path from 'path';
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
+import config from '../config';
 
 // Configuration of cloudinary
 cloudinary.config({ 
-    cloud_name: 'dbxrmaghj', 
-    api_key: '121786356992695', 
-    api_secret: 's44z4-KTc6E-KJ74tcsA7ggGZgQ' // Click 'View API Keys' above to copy your API secret
+    cloud_name: config.cloudinary.name, 
+    api_key: config.cloudinary.api_key, 
+    api_secret: config.cloudinary.api_secret // Click 'View API Keys' above to copy your API secret
 });
 
 const storage = multer.diskStorage({
