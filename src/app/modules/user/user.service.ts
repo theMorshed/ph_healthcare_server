@@ -1,12 +1,12 @@
-import { Admin, Doctor, Patient, Prisma, UserRole } from "@prisma/client";
+import { Admin, Doctor, Patient, Prisma, User, UserRole, UserStatus } from "@prisma/client";
 import bcrypt from 'bcrypt';
 import { prisma } from "../../../shared/prisma";
 import { uploadToCloudinary } from "../../../helpers/fileUploader";
 import { Request } from "express";
-import { IFile } from "../../types/file";
+import { IFile } from "../../../types/file";
 import { calculatePagination } from "../../../helpers/paginationHelper";
 import { userSearchableFields } from "./user.constant";
-import { createDeflate } from "zlib";
+import { TAuthUser } from "../../../types/common";
 
 export const createAdminService = async(req: Request): Promise<Admin> => {
     const file = req.file as IFile;
@@ -161,4 +161,52 @@ export const getAllUserService = async(params: any, options: any) => {
         },
         data: result
     }
+}
+
+export const updateProfileStatusService = async(id: string, status: UserRole) => {
+    const userData = await prisma.user.findUniqueOrThrow({
+        where: {
+            id
+        }
+    })
+
+    const updateStatus = await prisma.user.update({
+        where: {
+            id
+        },
+        data: status
+    })
+
+    return updateStatus;
+}
+
+export const getMyProfileService = async(user: TAuthUser) => {
+    let userRole: string;
+
+    if (user?.role === 'SUPER_ADMIN') {
+        userRole = 'admin';
+    } else {
+        userRole = user?.role.toLowerCase() as string;
+    }
+
+    const selectObj = {
+        id: true,
+        email: true,
+        needsPasswordChange: true,
+        role: true,
+        status: true, 
+        [userRole]: true
+    }
+
+    const userInfo = await prisma.user.findUniqueOrThrow({
+        where: {
+            email: user?.email,
+            status: UserStatus.ACTIVE
+        },
+        select: {
+            ...selectObj  
+        }
+    })
+
+    return userInfo;
 }

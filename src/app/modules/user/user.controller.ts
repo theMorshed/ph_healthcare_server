@@ -1,9 +1,10 @@
-import { createAdminService, createDoctorService, createPatientService, getAllUserService } from "./user.service";
+import { createAdminService, createDoctorService, createPatientService, getAllUserService, getMyProfileService, updateProfileStatusService } from "./user.service";
 import { catchAsync } from "../../../shared/catchAsync";
 import { sendResponse } from "../../../shared/sendResponse";
 import { StatusCodes } from "http-status-codes";
 import { pick } from "../../../shared/pick";
 import { userFilterableFields } from "./user.constant";
+import { Request, Response } from "express";
 
 export const createAdmin = catchAsync(async(req, res) => {
     const result = await createAdminService(req);
@@ -47,4 +48,27 @@ export const getAllUser = catchAsync(async(req, res) => {
         meta: result.meta,
         data: result.data
     })    
+})
+
+export const updateProfileStatus = catchAsync(async(req, res) => {
+    const { id } = req.params;
+    const result = await updateProfileStatusService(id, req.body);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: 'Updated status successfully',
+        data: result
+    })    
+})
+
+export const getMyProfile = catchAsync(async(req: Request & {user?: any}, res: Response) => {
+    const result = await getMyProfileService(req.user);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: 'Profile data retrived successfully',
+        data: result
+    })     
 })

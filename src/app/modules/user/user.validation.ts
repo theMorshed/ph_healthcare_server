@@ -46,7 +46,7 @@ export const patientSchema = z.object({
     })
 });
 
-export const statusSchema = z.object({
+export const updateStatusSchema = z.object({
     body: z.object({
         status: z.enum([UserStatus.ACTIVE, UserStatus.BLOCKED, UserStatus.DELETED])
     })
