@@ -7,7 +7,7 @@ import { delteteDoctorService, getAllDoctorService, getDoctorByIDService, softDe
 
 export const getAllDoctor = catchAsync(async(req, res) => {
     const filters = pick(req.query, filterableFields);
-    const options = pick(req.query, ['limit', 'page']);   
+    const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);   
     const result = await getAllDoctorService(filters, options);
 
     sendResponse(res, {

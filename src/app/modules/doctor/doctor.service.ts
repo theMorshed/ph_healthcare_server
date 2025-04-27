@@ -4,10 +4,10 @@ import { calculatePagination } from "../../../helpers/paginationHelper";
 import { searchableFields } from "./doctor.constant";
 
 export const getAllDoctorService = async(params: any, options: any) => {    
-    const { searchTerm, ...filterData } = params;
+    const { searchTerm, specialties, ...filterData } = params;
     const { limit, page, skip } = calculatePagination(options);
     const conditions: Prisma.DoctorWhereInput[] = [];    
-
+    
     if (params.searchTerm) {
         conditions.push({
             OR: searchableFields.map(field => ({
@@ -16,6 +16,21 @@ export const getAllDoctorService = async(params: any, options: any) => {
                     mode: 'insensitive'
                 }
             }))
+        })
+    }
+
+    if (specialties && specialties.length > 0) {
+        conditions.push({
+            doctorSpecialties: {
+                some: {
+                    specialties: {
+                        title: {
+                            contains: specialties,
+                            mode: 'insensitive'
+                        }
+                    }
+                }
+            }
         })
     }
 
